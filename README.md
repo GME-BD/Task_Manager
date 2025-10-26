@@ -1,5 +1,4 @@
 <p align="center">
-  <img src="https://github.com/arafat-web/Task-Manager/assets/26932301/d5f6a26e-32d1-44dc-aee5-9548a44506ae" alt="Icon Description">
 </p>
 
 <h1 align="center">Task Manager</h1>
@@ -23,7 +22,7 @@ Task Manager is an open-source Laravel application designed to simplify the proc
 
 ### Step 1: Clone the Repository
 ```
-git clone https://github.com/arafat-web/Task-Manager.git
+
 cd Task-Manager
 ```
 
@@ -88,14 +87,9 @@ Task Manager allows users to efficiently manage projects and tasks through a use
    - Easily access all necessary documents and resources in one place.
 
 ## Demo
-<img src="https://github.com/arafat-web/Task-Manager/assets/26932301/d5f6a26e-32d1-44dc-aee5-9548a44506ae" alt="Demo">
-<img src="https://github.com/arafat-web/Task-Manager/assets/26932301/8795129a-69e5-4911-bb26-caae3bca50be" alt="Demo">
-<img src="https://github.com/arafat-web/Task-Manager/assets/26932301/bd96fa3c-7f43-4ab7-8aa1-4614629d9d26" alt="Demo">
 
-## Contributing
-For any issues or inquiries, please open an issue on the [Issues](https://github.com/arafat-web/Task-Manager/issues).<br/>
-If you can help me by contributing. Please don't hesitate to open a [Pull Request](https://github.com/arafat-web/Task-Manager/pulls).<br/>
-🎉 **Thanks for reading!** 🌟  
+
+ 
 
 
 

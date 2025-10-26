@@ -28,7 +28,7 @@
     </style>
     <div class="container">
         <div class="bg-white align-items-center mb-4 shadow-sm p-3 rounded">
-            <h2 class="text-center">{{ $project->name }} - Tasks</h2>
+            <h2 class="text-center">{{ $project->name }} - Tasks Board</h2>
         </div>
 
         @if (session('success'))
@@ -128,13 +128,13 @@
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
-                            <div class="mb-3">
+                            {{-- <div class="mb-3">
                                 <label for="description" class="form-label">Description</label>
                                 <textarea name="description" id="description" class="form-control"></textarea>
                                 @error('description')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
-                            </div>
+                            </div> --}}
                             <div class="mb-3">
                                 <label for="due_date" class="form-label">Due Date</label>
                                 <input type="date" name="due_date" id="due_date" class="form-control">
@@ -163,7 +163,7 @@
                                 </select>
                                 @error('user_id')
                                     <span class="text-danger">{{ $message }}</span>
-                                @enderror
+                                @enderror 
                             </div>
                             <input type="hidden" name="status" id="task_status">
 

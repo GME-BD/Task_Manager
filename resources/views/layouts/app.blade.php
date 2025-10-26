@@ -248,7 +248,7 @@
                                     {{ Auth::user()->name }}
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                                    {{-- <li><a class="dropdown-item" href="#">Settings</a></li> --}}
                                     <li>
                                         <form method="POST" action="{{ route('logout') }}" id="logout-form">
                                             @csrf
@@ -271,7 +271,7 @@
         {{-- Footer: Subtle and clean --}}
         <footer class="mt-auto py-3 text-center">
             <div class="container-fluid">
-                <span class="text-muted">&copy; {{ date('Y') }} Task Manager | Developed by <a href="#" style="color: var(--primary-color); text-decoration: none;">Pulak Kar</a></span>
+                <span class="text-muted">&copy; {{ date('Y') }} Task Manager | Developed by <a href="#" style="color: var(--primary-color); text-decoration: none;">Admin & IT Department</a></span>
             </div>
         </footer>
     </div>
