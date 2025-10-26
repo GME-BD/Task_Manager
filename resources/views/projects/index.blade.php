@@ -114,10 +114,10 @@
         
         {{-- Header Section (Modernized) --}}
         <div class="page-header d-flex justify-content-between align-items-center mb-5">
-            <h2 class="header-title">Employee Overview</h2>
+            <h2 class="header-title">Project Overview</h2>
             {{-- Changed button text to be more relevant to the list (Projects) --}}
             <a href="{{ route('projects.create') }}" class="btn btn-accent shadow">
-                <i class="bi bi-plus-circle me-1"></i> Add New Employee
+                <i class="bi bi-plus-circle me-1"></i> Add New Project
             </a>
         </div>
 
@@ -167,7 +167,7 @@
                                 @if($project->end_date && $project->end_date->isFuture())
                                     <span class="text-primary">{{ $project->end_date->format('M d, Y') }} ({{ $project->end_date->diffForHumans() }})</span>
                                 @else
-                                    <span class="text-danger">Deadline Passed <i class="bi bi-clock-history"></i></span>
+                                    <span class="text-danger"> Deadline Passed <i class="bi bi-clock-history"></i></span>
                                 @endif
                             </p>
                             
