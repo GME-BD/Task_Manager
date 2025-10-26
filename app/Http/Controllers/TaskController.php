@@ -47,7 +47,7 @@ class TaskController extends Controller
 
         $task->update($request->all());
 
-        return redirect()->route('tasks.index', $task->project_id)->with('success', 'Task updated successfully.');
+        return redirect()->route('projects.tasks.index', $task->project_id)->with('success', 'Task updated successfully.');
     }
 
     public function updateStatus(Request $request, Task $task)

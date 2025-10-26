@@ -66,7 +66,7 @@ class ProjectController extends Controller
 
         $project->update($request->all());
 
-        return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
+        return redirect()->route('projects.index')->with('success', 'Employee updated successfully.');
     }
 
     public function destroy(Project $project)
@@ -82,7 +82,7 @@ class ProjectController extends Controller
 
         $project->delete();
 
-        return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
+        return redirect()->route('projects.index')->with('success', 'Employee deleted successfully.');
     }
 
     public function addMember(Request $request)

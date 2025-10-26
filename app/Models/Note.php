@@ -14,6 +14,7 @@ class Note extends Model
         'content',
         'date',
         'time',
+        
     ];
 
     public function user()
