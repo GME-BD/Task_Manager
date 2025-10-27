@@ -4,7 +4,7 @@
 @endsection
 @section('content')
     <div class="container">
-        <h2 class="mb-4">Create Task</h2>
+        <h2 class="mb-4">Create Tas</h2>
 
         <form action="{{ route('tasks.store') }}" method="POST">
             @csrf
