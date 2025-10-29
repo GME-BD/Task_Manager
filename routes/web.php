@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\FileController;
@@ -28,7 +29,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::put('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::post('tasks/{task}/update-status', [TaskController::class, 'updateStatus']);
-    
+
     Route::resource('routines', RoutineController::class)->except(['show']);
     Route::get('routines/showAll', [RoutineController::class, 'showAll'])->name('routines.showAll');
     Route::get('routines/daily', [RoutineController::class, 'showDaily'])->name('routines.showDaily');
@@ -53,14 +54,14 @@ Route::middleware(['auth'])->group(function () {
         $upcomingReminders = $user->reminders()->where('date', '>=', now())->orderBy('date')->take(5)->get();
 
         return view('dashboard', compact(
-            'tasksCount', 
+            'tasksCount',
             'routinesCount',
-            'notesCount', 
+            'notesCount',
             'remindersCount',
-            'filesCount', 
-            'recentTasks', 
-            'todayRoutines', 
-            'recentNotes', 
+            'filesCount',
+            'recentTasks',
+            'todayRoutines',
+            'recentNotes',
             'upcomingReminders'
         ));
     })->name('dashboard');
