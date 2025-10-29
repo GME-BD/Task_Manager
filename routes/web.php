@@ -9,6 +9,7 @@ use App\Http\Controllers\ProjectFileController;
 use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\TaskController;
+use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -16,14 +17,21 @@ Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
+Route::middleware([AdminMiddleware::class])->group(function () {
+
+    Route::resource('projects', ProjectController::class);
+     Route::post('project/team', [ProjectController::class, 'addMember'])->name('projects.addMember');
+    Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
+
+});
+
+
 Route::middleware(['auth'])->group(function () {
     Route::controller(MailController::class)->prefix('mail')->name('mail.')->group(function () {
         Route::get('/', 'index')->name('inbox');
     });
-    Route::resource('projects', ProjectController::class);
-    Route::post('project/team', [ProjectController::class, 'addMember'])->name('projects.addMember');
-    Route::get('projects/{project}/tasks', [TaskController::class, 'index'])->name('projects.tasks.index');
-    Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
+    
+   
 
     Route::get('tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::put('tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
@@ -64,4 +72,9 @@ Route::middleware(['auth'])->group(function () {
             'upcomingReminders'
         ));
     })->name('dashboard');
-});
+        
+    });
+
+
+
+

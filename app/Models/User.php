@@ -41,6 +41,13 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    //Hepler Method for Admin
+    public function isAdmin(): bool
+        {
+    return $this->role === 'admin';
+        }
+
+
     /**
      * Get the projects for the user.
      */

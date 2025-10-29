@@ -174,7 +174,7 @@
                             {{-- Action Buttons (Modern Icon-only) --}}
                             <div class="action-group mt-auto">
                                 {{-- Tasks List --}}
-                                <a href="{{ route('projects.tasks.index', $project->id) }}" class="btn btn-info" data-bs-toggle="tooltip" data-bs-placement="top" title="View Tasks">
+                                <a href="{{ route('projects.index', $project->id) }}" class="btn btn-info" data-bs-toggle="tooltip" data-bs-placement="top" title="View Tasks">
                                     <i class="bi bi-list-task"></i>
                                 </a>
                                 
