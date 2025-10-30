@@ -170,6 +170,23 @@
                         @enderror
                     </div>
 
+                     {{-- Status --}}
+                   <div class="mb-4">
+    <label for="user" class="form-label">Select Employees to Assign:</label>
+    <select name="user[]" id="user" class="form-select" multiple>
+        @foreach($users as $user)
+            <option value="{{ $user->id }}">
+                {{ $user->name }}
+            </option>
+        @endforeach
+    </select>
+    <small class="form-text text-muted">Hold Ctrl (Windows) to select multiple employees.</small>
+</div>
+
+
+
+
+
                     {{-- Budget Field (Uncommented and styled) --}}
                     {{-- <div class="mb-4">
                         <label for="budget" class="form-label">Budget (Optional)</label>
