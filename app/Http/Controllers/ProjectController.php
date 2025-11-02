@@ -197,7 +197,10 @@ class ProjectController extends Controller
     // Show create form (Admin only)
     public function create()
     {
-        $this->authorize('admin'); // or manually check role
+         $user = Auth::user();
+            if ($user->role !== 'admin') {
+        abort(403, 'Unauthorized');
+    }
         $users = User::where('role', 'user')->get(); // only normal employees
         return view('projects.create', compact('users'));
     }
