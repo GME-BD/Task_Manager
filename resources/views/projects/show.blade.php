@@ -206,7 +206,7 @@
                                 <i class="bi bi-arrow-left me-1"></i> Back to List
                             </a>
                             <a href="{{ route('projects.edit', $project->id) }}" class="btn btn-warning">
-                                <i class="bi bi-pencil-square me-1"></i> Edit Employee
+                                <i class="bi bi-pencil-square me-1"></i> Edit Project
                             </a>
                         </div>
                     </div>
@@ -238,7 +238,8 @@
                                 </div>
                             @empty
                                 <div class="alert alert-light text-center" role="alert">
-                                    No members assigned yet.
+                                     members.
+                                    
                                 </div>
                             @endforelse
                         </div>

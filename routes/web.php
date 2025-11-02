@@ -10,6 +10,7 @@ use App\Http\Controllers\ProjectFileController;
 use App\Http\Controllers\ReminderController;
 use App\Http\Controllers\RoutineController;
 use App\Http\Controllers\TaskController;
+use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -17,13 +18,55 @@ Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
+Route::middleware([AdminMiddleware::class])->group(function () {
+
+
+    // Display a listing of the resource (index)
+Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
+
+    // Show the form for creating a new resource
+Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');
+
+// Store a newly created resource in storage
+Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
+
+// Display the specified resource (show)
+Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+
+// Show the form for editing the specified resource
+Route::get('projects/{project}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
+
+// Update the specified resource in storage
+Route::put('projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
+
+// Delete the specified resource from storage
+Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+
+});
+
+
 Route::middleware(['auth'])->group(function () {
     Route::controller(MailController::class)->prefix('mail')->name('mail.')->group(function () {
         Route::get('/', 'index')->name('inbox');
     });
-    Route::resource('projects', ProjectController::class);
-    Route::post('project/team', [ProjectController::class, 'addMember'])->name('projects.addMember');
-    Route::get('projects/{project}/tasks', [TaskController::class, 'index'])->name('projects.tasks.index');
+    
+//    Route::resource('projects', ProjectController::class);
+
+
+Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
+Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+
+
+
+
+
+
+
+
+
+
+
+     Route::post('project/team', [ProjectController::class, 'addMember'])->name('projects.addMember');
     Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
 
     Route::get('tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
@@ -65,4 +108,9 @@ Route::middleware(['auth'])->group(function () {
             'upcomingReminders'
         ));
     })->name('dashboard');
-});
+        
+    });
+
+
+
+

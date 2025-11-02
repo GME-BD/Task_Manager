@@ -102,21 +102,21 @@
     <div class="container mb-3">
         {{-- Modernized Header (Changed "Employee" to "Project") --}}
         <h2 class="page-header mb-5">
-            <i class="bi bi-folder-plus me-2"></i> Create New Employee
+            <i class="bi bi-folder-plus me-2"></i> Create New Project Here 
         </h2>
 
         <div class="card m-auto" style="max-width: 600px;">
             <div class="card-body p-4 p-md-5">
 
                 {{-- Form Title --}}
-                <h4 class="card-title text-center mb-4 text-secondary">Employee Details</h4>
+                <h4 class="card-title text-center mb-4 text-secondary">Add Project Details</h4>
 
                 <form action="{{ route('projects.store') }}" method="POST">
                     @csrf
 
                     {{-- Project Name --}}
                     <div class="mb-4">
-                        <label for="name" class="form-label">Employee Name <span class="text-danger">*</span></label>
+                        <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}"
                             placeholder="name" required>
                         @error('name')
@@ -128,7 +128,7 @@
                     <div class="mb-4">
                         <label for="description" class="form-label">Description</label>
                         <textarea name="description" id="description" class="form-control" rows="3"
-                            placeholder="Employee objectives">{{ old('description') }}</textarea>
+                            placeholder="Project Description....">{{ old('description') }}</textarea>
                         @error('description')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
@@ -169,6 +169,23 @@
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
                     </div>
+
+                     {{-- Status --}}
+                   <div class="mb-4">
+    <label for="user" class="form-label">Select Employees to Assign:</label>
+    <select name="user[]" id="user" class="form-select" multiple>
+        @foreach($users as $user)
+            <option value="{{ $user->id }}">
+                {{ $user->name }}
+            </option>
+        @endforeach
+    </select>
+    <small class="form-text text-muted">Hold Ctrl (Windows) to select multiple employees.</small>
+</div>
+
+
+
+
 
                     {{-- Budget Field (Uncommented and styled) --}}
                     {{-- <div class="mb-4">
