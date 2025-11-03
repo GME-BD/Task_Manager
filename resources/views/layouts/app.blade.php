@@ -204,7 +204,7 @@
             <li class="nav-item">
                 <a class="nav-link {{ request()->is('projects*') ? 'active' : '' }}"
                     href="{{ route('projects.index') }}">
-                    <i class="bi bi-folder"></i> Employee List
+                    <i class="bi bi-folder"></i> Project List
                 </a>
             </li>
             <li class="nav-item">

@@ -122,6 +122,7 @@
                     {{-- Project Name --}}
                     <div class="mb-4">
                         <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label>
+                        <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}"
                             placeholder="Enter project name" required>
                         @error('name')
