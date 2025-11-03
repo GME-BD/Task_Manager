@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -89,5 +90,34 @@ class User extends Authenticatable
     public function projectMembers()
     {
         return $this->belongsToMany(Project::class, 'project_teams', 'user_id', 'project_id');
+    }
+
+
+
+
+
+// Projects created by this user (if admin)
+    public function createdProjects()
+    {
+        return $this->hasMany(Project::class, 'user_id');
+    }
+
+    // Projects assigned to this user
+    public function assignedProjects()
+    {
+        return $this->belongsToMany(Project::class, 'project_teams', 'user_id', 'project_id')
+                    ->withTimestamps();
+    }
+
+    // Check if user is admin
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    // Check if user is employee
+    public function isEmployee()
+    {
+        return $this->role === 'employee';
     }
 }

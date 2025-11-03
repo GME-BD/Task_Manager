@@ -28,7 +28,7 @@
     </style>
     <div class="container">
         <div class="bg-white align-items-center mb-4 shadow-sm p-3 rounded">
-            <h2 class="text-center">{{ $project->name }} - Tasks Board</h2>
+            <h2 class="text-center">{{ $project->name }} - Tasks board</h2>
         </div>
 
         @if (session('success'))

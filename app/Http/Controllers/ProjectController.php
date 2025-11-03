@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Project;
@@ -10,24 +11,47 @@ class ProjectController extends Controller
 {
     public function index()
     {
-        $projects = Auth::user()->projects()->withCount(['tasks as to_do_tasks' => function ($query) {
-            $query->where('status', 'to_do');
-        }, 'tasks as in_progress_tasks' => function ($query) {
-            $query->where('status', 'in_progress');
-        }, 'tasks as completed_tasks' => function ($query) {
-            $query->where('status', 'completed');
-        }])->get();
+        if (Auth::user()->isAdmin()) {
+            // Admin sees all projects with pagination
+            $projects = Project::withCount(['tasks as to_do_tasks' => function ($query) {
+                $query->where('status', 'to_do');
+            }, 'tasks as in_progress_tasks' => function ($query) {
+                $query->where('status', 'in_progress');
+            }, 'tasks as completed_tasks' => function ($query) {
+                $query->where('status', 'completed');
+            }])->with('user', 'teamMembers')->paginate(9); // Changed to paginate
+        } else {
+            // Employee sees only assigned projects with pagination
+            $projects = Auth::user()->assignedProjects()->withCount(['tasks as to_do_tasks' => function ($query) {
+                $query->where('status', 'to_do');
+            }, 'tasks as in_progress_tasks' => function ($query) {
+                $query->where('status', 'in_progress');
+            }, 'tasks as completed_tasks' => function ($query) {
+                $query->where('status', 'completed');
+            }])->with('user', 'teamMembers')->paginate(9); // Changed to paginate
+        }
 
         return view('projects.index', compact('projects'));
     }
 
     public function create()
     {
-        return view('projects.create');
+        // Only admin can create projects
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $employees = User::where('role', 'employee')->get();
+        return view('projects.create', compact('employees'));
     }
 
     public function store(Request $request)
     {
+        // Only admin can create projects
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -35,26 +59,54 @@ class ProjectController extends Controller
             'end_date' => 'nullable|date',
             'status' => 'required|in:not_started,in_progress,completed',
             'budget' => 'nullable|numeric',
+            'assigned_employees' => 'nullable|array',
+            'assigned_employees.*' => 'exists:users,id',
         ]);
 
-        Auth::user()->projects()->create($request->all());
+        // Create project
+        $project = Auth::user()->createdProjects()->create($request->all());
 
-        return redirect()->route('projects.index')->with('success', 'Employee created successfully.');
+        // Assign employees to project
+        if ($request->has('assigned_employees')) {
+            $project->teamMembers()->attach($request->assigned_employees);
+        }
+
+        return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     }
 
     public function show(Project $project)
     {
-        $teamMembers = $project->users()->get();
-        $users = User::all();
-        return view('projects.show', compact('project', 'teamMembers', 'users'));
+        // Check if user has access to this project
+        if (!Auth::user()->isAdmin() && !$project->teamMembers->contains(Auth::id())) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $teamMembers = $project->teamMembers;
+        $employees = User::where('role', 'employee')->get();
+
+        return view('projects.show', compact('project', 'teamMembers', 'employees'));
     }
+
     public function edit(Project $project)
     {
-        return view('projects.edit', compact('project'));
+        // Only admin can edit projects
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $employees = User::where('role', 'employee')->get();
+        $assignedEmployees = $project->teamMembers->pluck('id')->toArray();
+
+        return view('projects.edit', compact('project', 'employees', 'assignedEmployees'));
     }
 
     public function update(Request $request, Project $project)
     {
+        // Only admin can update projects
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -62,38 +114,64 @@ class ProjectController extends Controller
             'end_date' => 'nullable|date',
             'status' => 'required|in:not_started,in_progress,completed',
             'budget' => 'nullable|numeric',
+            'assigned_employees' => 'nullable|array',
+            'assigned_employees.*' => 'exists:users,id',
         ]);
 
         $project->update($request->all());
 
-        return redirect()->route('projects.index')->with('success', 'Employee updated successfully.');
+        // Sync assigned employees
+        if ($request->has('assigned_employees')) {
+            $project->teamMembers()->sync($request->assigned_employees);
+        } else {
+            $project->teamMembers()->detach();
+        }
+
+        return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
     }
 
     public function destroy(Project $project)
     {
-        // FIX: The foreign key constraint error occurs because records exist in the
-        // `project_teams` pivot table. We must remove these child records first.
-        // We use `detach()` on the `teamProjects` relationship (the one used in `addMember`).
-        $project->teamProjects()->detach();
+        // Only admin can delete projects
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
 
-        // If tasks are also linked to projects, and you haven't set `onDelete('cascade')`
-        // in your migration, you should also consider deleting/detaching them here.
-        // $project->tasks()->delete();
-
+        $project->teamMembers()->detach();
         $project->delete();
 
-        return redirect()->route('projects.index')->with('success', 'Employee deleted successfully.');
+        return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
     }
 
-    public function addMember(Request $request)
+    public function addMember(Request $request, Project $project)
     {
+        // Only admin can add members
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
-            'project_id' => 'required|exists:projects,id',
             'user_id' => 'required|exists:users,id',
         ]);
 
-        $project = Project::find($request->project_id);
-        $project->teamProjects()->attach($request->user_id);
-        return redirect()->back()->with('success', 'Employee added successfully.');
+        $project->teamMembers()->attach($request->user_id);
+
+        return redirect()->back()->with('success', 'Employee added to project successfully.');
+    }
+
+    public function removeMember(Request $request, Project $project)
+    {
+        // Only admin can remove members
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $project->teamMembers()->detach($request->user_id);
+
+        return redirect()->back()->with('success', 'Employee removed from project successfully.');
     }
 }

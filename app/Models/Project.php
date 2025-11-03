@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,20 +30,20 @@ class Project extends Model
         'end_date' => 'date',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
 
-    public function tasks()
-    {
-        return $this->hasMany(Task::class);
-    }
+    // public function tasks()
+    // {
+    //     return $this->hasMany(Task::class);
+    // }
 
-    public function files()
-    {
-        return $this->hasMany(File::class);
-    }
+    // public function files()
+    // {
+    //     return $this->hasMany(File::class);
+    // }
 
     public function getStatusAttribute()
     {
@@ -68,5 +69,32 @@ class Project extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'project_teams', 'project_id', 'user_id');
+    }
+
+
+
+
+    
+    // ------------------------// Project creator (admin)-------------------------
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    //---------------------------- Team members assigned to this project--------------------------
+    public function teamMembers()
+    {
+        return $this->belongsToMany(User::class, 'project_teams', 'project_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(File::class);
     }
 }

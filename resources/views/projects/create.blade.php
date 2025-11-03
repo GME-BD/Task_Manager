@@ -5,19 +5,16 @@
 @endsection
 
 @section('styles')
-    {{-- Include Bootstrap Icons for the new buttons if not already in layouts.app --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
         :root {
             --primary-color: #007bff;
-            /* Vibrant Blue */
             --primary-dark: #0056b3;
             --accent-gradient: linear-gradient(90deg, #5b86e5 0%, #36d1dc 100%);
             --card-border-radius: 1.5rem;
             --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         }
 
-        /* Container & Card Styling */
         .container {
             padding-top: 2rem;
             padding-bottom: 2rem;
@@ -41,7 +38,6 @@
             transition: transform 0.3s ease;
         }
 
-        /* Form Element Styling */
         .form-label {
             font-weight: 500;
             color: #495057;
@@ -61,7 +57,6 @@
             box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
         }
 
-        /* Action Button */
         .btn-submit {
             background: var(--accent-gradient);
             border: none;
@@ -95,30 +90,40 @@
             font-size: 0.875rem;
             font-weight: 500;
         }
+
+        .employee-checkbox {
+            margin-right: 8px;
+        }
+
+        .employees-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ced4da;
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
     </style>
 @endsection
 
 @section('content')
     <div class="container mb-3">
-        {{-- Modernized Header (Changed "Employee" to "Project") --}}
         <h2 class="page-header mb-5">
-            <i class="bi bi-folder-plus me-2"></i> Create New Employee
+            <i class="bi bi-folder-plus me-2"></i> Create New Project
         </h2>
 
         <div class="card m-auto" style="max-width: 600px;">
             <div class="card-body p-4 p-md-5">
 
-                {{-- Form Title --}}
-                <h4 class="card-title text-center mb-4 text-secondary">Employee Details</h4>
+                <h4 class="card-title text-center mb-4 text-secondary">Project Details</h4>
 
                 <form action="{{ route('projects.store') }}" method="POST">
                     @csrf
 
                     {{-- Project Name --}}
                     <div class="mb-4">
-                        <label for="name" class="form-label">Employee Name <span class="text-danger">*</span></label>
+                        <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}"
-                            placeholder="name" required>
+                            placeholder="Enter project name" required>
                         @error('name')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
@@ -128,7 +133,7 @@
                     <div class="mb-4">
                         <label for="description" class="form-label">Description</label>
                         <textarea name="description" id="description" class="form-control" rows="3"
-                            placeholder="Employee objectives">{{ old('description') }}</textarea>
+                            placeholder="Project description">{{ old('description') }}</textarea>
                         @error('description')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
@@ -158,7 +163,6 @@
                     <div class="mb-4">
                         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                         <select name="status" id="status" class="form-select" required>
-                            {{-- Added logic to retain old value on validation error --}}
                             <option value="not_started" {{ old('status') == 'not_started' ? 'selected' : '' }}>Not Started
                             </option>
                             <option value="in_progress" {{ old('status') == 'in_progress' ? 'selected' : '' }}>In Progress
@@ -170,24 +174,46 @@
                         @enderror
                     </div>
 
-                    {{-- Budget Field (Uncommented and styled) --}}
-                    {{-- <div class="mb-4">
+                    {{-- Budget Field --}}
+                    <div class="mb-4">
                         <label for="budget" class="form-label">Budget (Optional)</label>
-
                         <input type="number" name="budget" id="budget" class="form-control" step="0.01"
                             value="{{ old('budget') }}" placeholder="0.00">
                         @error('budget')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
-                    </div> --}}
+                    </div>
+
+                    {{-- Assign Employees --}}
+                    <div class="mb-4">
+                        <label class="form-label">Assign to Employees</label>
+                        <div class="employees-container">
+                            @foreach($employees as $employee)
+                                <div class="form-check">
+                                    <input class="form-check-input employee-checkbox" type="checkbox"
+                                        name="assigned_employees[]" value="{{ $employee->id }}"
+                                        id="employee_{{ $employee->id }}" {{ in_array($employee->id, old('assigned_employees', [])) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="employee_{{ $employee->id }}">
+                                        {{ $employee->name }} ({{ $employee->email }})
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                        @error('assigned_employees')
+                            <span class="text-danger mt-1 d-block">{{ $message }}</span>
+                        @enderror
+                        @error('assigned_employees.*')
+                            <span class="text-danger mt-1 d-block">{{ $message }}</span>
+                        @enderror
+                    </div>
 
                     {{-- Action Buttons --}}
                     <div class="d-flex justify-content-between mt-5">
-                        <a href="{{ url()->previous() }}" class="btn btn-back">
+                        <a href="{{ route('projects.index') }}" class="btn btn-back">
                             <i class="bi bi-arrow-left me-1"></i> Back
                         </a>
                         <button type="submit" class="btn btn-submit">
-                            <i class="bi bi-check-circle me-1"></i> Save
+                            <i class="bi bi-check-circle me-1"></i> Create Project
                         </button>
                     </div>
                 </form>

@@ -1,10 +1,9 @@
 @extends('layouts.app')
 
 @section('title')
-    Projects 🚀
+    Projects 
 @endsection
 
-{{-- Include Bootstrap Icons for the new buttons if not already in layouts.app --}}
 @section('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
@@ -29,20 +28,20 @@
             font-weight: 600;
             color: #343a40;
         }
-
+  
         /* Modern card styling */
         .card {
             border: none;
             border-radius: var(--card-border-radius);
             box-shadow: var(--card-shadow);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: 100%; /* Important for row alignment */
+            height: 100%;
         }
 
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
+        }   
 
         .card-body {
             padding: 1.5rem;
@@ -63,27 +62,38 @@
             font-size: 0.85rem;
         }
 
-        .status-pending { background-color: #ffc107; color: #343a40; } /* Warning */
-        .status-on_going { background-color: #17a2b8; color: white; } /* Info/Cyan */
-        .status-completed { background-color: #28a745; color: white; } /* Success */
+        .status-not_started { background-color: #6c757d; color: white; }
+        .status-in_progress { background-color: #17a2b8; color: white; }
+        .status-completed { background-color: #28a745; color: white; }
+        .status-pending { background-color: #ffc107; color: #343a40; }
+
+        /* Task stats */
+        .task-stats {
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .task-stat-item {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .task-stat-number {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
 
         /* Action buttons group */
         .action-group .btn {
             border-radius: 0.5rem;
             padding: 0.5rem 0.75rem;
             font-size: 0.9rem;
-            margin-right: 0.25rem; /* Space between buttons */
-            /* Ensure primary button uses the modern color */
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+            margin-right: 0.25rem;
         }
 
-        .action-group .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-
-        /* Add Person button with accent gradient */
+        /* Add Project button with accent gradient */
         .btn-accent {
             background: var(--accent-gradient);
             border: none;
@@ -91,10 +101,12 @@
             padding: 0.5rem 1.5rem;
             border-radius: 0.75rem;
             transition: opacity 0.3s ease;
+            color: white;
         }
 
         .btn-accent:hover {
             opacity: 0.9;
+            color: white;
         }
 
         .deadline-text {
@@ -103,111 +115,285 @@
         }
 
         .text-danger {
-             font-weight: 600;
+            font-weight: 600;
         }
 
+        .assigned-members {
+            margin-top: 0.5rem;
+        }
+
+        .member-badge {
+            background: #e9ecef;
+            border-radius: 1rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            color: #495057;
+        }
+
+        .admin-badge {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .creator-info {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Pagination styling */
+        .pagination {
+            margin-top: 2rem;
+        }
+
+        .page-link {
+            border-radius: 0.5rem;
+            margin: 0 0.25rem;
+            border: 1px solid #dee2e6;
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
     </style>
 @endsection
 
 @section('content')
     <div class="container py-4">
         
-        {{-- Header Section (Modernized) --}}
+        {{------------------------------------ Header Section -------------------------------------}}
         <div class="page-header d-flex justify-content-between align-items-center mb-5">
-            <h2 class="header-title">Employee Overview</h2>
-            {{-- Changed button text to be more relevant to the list (Projects) --}}
-            <a href="{{ route('projects.create') }}" class="btn btn-accent shadow">
-                <i class="bi bi-plus-circle me-1"></i> Add New Employee
-            </a>
+            <div>
+                <h2 class="header-title mb-1">
+                    <i class="bi bi-folder me-2"></i>
+                    @auth
+                        {{ Auth::user()->isAdmin() ? 'All Projects' : 'My Projects' }}
+                    @endauth
+                </h2>
+                @auth
+                    @if(Auth::user()->isAdmin())
+                        <p class="text-muted mb-0">Manage all projects and assign them to team members</p>
+                    @else
+                        <p class="text-muted mb-0">Projects assigned to you</p>
+                    @endif
+                @endauth
+            </div>
+            
+            @if(Auth::user()->isAdmin())
+                <a href="{{ route('projects.create') }}" class="btn btn-accent shadow">
+                    <i class="bi bi-plus-circle me-1"></i> Create Project
+                </a>
+            @endif
         </div>
 
-        {{-- Success Alert --}}
+        {{-------------------------------------- Success Alert --------------------------------------------}}
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
-        {{-- Projects Grid --}}
+        {{---------------------------------------- Projects Count ---------------------------------------------}}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-light border-0" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Showing <strong>{{ $projects->count() }}</strong> 
+                    @if($projects->total() > $projects->count())
+                        of <strong>{{ $projects->total() }}</strong>
+                    @endif
+                    project(s)
+                </div>
+            </div>
+        </div>
+
+        {{------------------------------------------ Projects Grid -----------------------------------------------}}
         <div class="row">
             @forelse($projects as $project)
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card">
                         <div class="card-body d-flex flex-column">
-                            {{-- Project Title --}}
+                            {{------------------------------ Project Title -------------------------------------}}
                             <h5 class="card-title">{{ $project->name }}</h5>
                             
-                            {{-- Description (Subtle text) --}}
-                            <p class="card-text text-secondary mb-3">{{ Str::limit($project->description, 100) }}</p> 
+                            {{---------------------------- Creator Info (for admin view) ---------------------}}
+                            @if(Auth::user()->isAdmin())
+                                <div class="creator-info">
+                                    <i class="bi bi-person me-1"></i>Created by: {{ $project->user->name }}
+                                </div>
+                            @endif
                             
-                            {{-- Status --}}
-                            <p class="mb-2">
+                            {{---------------------------------- Description ------------------------------------------}}
+                            <p class="card-text text-secondary mb-3">
+                                {{ $project->description ? Str::limit($project->description, 100) : 'No description provided' }}
+                            </p> 
+                            
+                            {{------------------------------------ Status -----------------------------------------------}}
+                            <div class="mb-2">
                                 <strong>Status:</strong>
                                 @php
                                     $statusClass = [
-                                        'pending' => 'status-pending',
-                                        'on_going' => 'status-on_going',
+                                        'not_started' => 'status-not_started',
+                                        'in_progress' => 'status-in_progress',
                                         'completed' => 'status-completed',
-                                    ][$project->status] ?? 'badge bg-light text-dark';
+                                    ][$project->status] ?? 'status-pending';
+                                    
                                     $statusText = [
-                                        'pending' => 'Pending',
-                                        'on_going' => 'In Progress',
+                                        'not_started' => 'Not Started',
+                                        'in_progress' => 'In Progress',
                                         'completed' => 'Completed',
                                     ][$project->status] ?? 'Unknown';
                                 @endphp
                                 <span class="status-badge {{ $statusClass }}">
                                     {{ $statusText }}
                                 </span>
-                            </p>
+                            </div>
 
-                            {{-- Deadline --}}
-                            <p class="deadline-text mb-4">
-                                <strong>Deadline:</strong>
-                                @if($project->end_date && $project->end_date->isFuture())
-                                    <span class="text-primary">{{ $project->end_date->format('M d, Y') }} ({{ $project->end_date->diffForHumans() }})</span>
-                                @else
-                                    <span class="text-danger">Deadline Passed <i class="bi bi-clock-history"></i></span>
-                                @endif
-                            </p>
+                            {{------------------------------------- Task Statistics ----------------------------------------}}
+                            <div class="task-stats">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="task-stat-item">
+                                            <div class="task-stat-number">{{ $project->to_do_tasks ?? 0 }}</div>
+                                            <small>To Do</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="task-stat-item">
+                                            <div class="task-stat-number">{{ $project->in_progress_tasks ?? 0 }}</div>
+                                            <small>In Progress</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="task-stat-item">
+                                            <div class="task-stat-number">{{ $project->completed_tasks ?? 0 }}</div>
+                                            <small>Completed</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-------------------------------------------- Dates -------------------------------------}}
+                            <div class="mb-3">
+                                <div class="deadline-text mb-1">
+                                    <strong>Start:</strong> 
+                                    {{ $project->start_date ? $project->start_date->format('M d, Y') : 'Not set' }}
+                                </div>
+                                <div class="deadline-text">
+                                    <strong>Deadline:</strong>
+                                    @if($project->end_date)
+                                        @if($project->end_date->isFuture())
+                                            <span class="text-primary">{{ $project->end_date->format('M d, Y') }}</span>
+                                            <small class="text-muted">({{ $project->end_date->diffForHumans() }})</small>
+                                        @else
+                                            <span class="text-danger">
+                                                {{ $project->end_date->format('M d, Y') }}
+                                                <i class="bi bi-clock-history ms-1"></i>
+                                            </span>
+                                        @endif
+                                    @else
+                                        <span class="text-muted">Not set</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{----------------------------------- Assigned Members -----------------------------------}}
+                            @if($project->teamMembers && $project->teamMembers->count() > 0)
+                                <div class="assigned-members">
+                                    <strong class="small">Assigned to:</strong>
+                                    <div class="mt-1">
+                                        @foreach($project->teamMembers->take(3) as $member)
+                                            <span class="member-badge d-inline-block me-1 mb-1">
+                                                {{ $member->name }}
+                                            </span>
+                                        @endforeach
+                                        @if($project->teamMembers->count() > 3)
+                                            <span class="member-badge d-inline-block me-1 mb-1">
+                                                +{{ $project->teamMembers->count() - 3 }} more
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @else
+                                <div class="assigned-members">
+                                    <span class="text-muted small">No team members assigned</span>
+                                </div>
+                            @endif
                             
-                            {{-- Action Buttons (Modern Icon-only) --}}
-                            <div class="action-group mt-auto">
-                                {{-- Tasks List --}}
+                            {{----------------------------------- Action Buttons ------------------------------------}}
+                            <div class="action-group mt-auto pt-3">
+                                {{----------------------------- View Project Details ---------------------------------}}
+                                <a href="{{ route('projects.show', $project->id) }}" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                
+                                {{-------------------------------------- View Tasks --}}
                                 <a href="{{ route('projects.tasks.index', $project->id) }}" class="btn btn-info" data-bs-toggle="tooltip" data-bs-placement="top" title="View Tasks">
                                     <i class="bi bi-list-task"></i>
                                 </a>
                                 
-                                {{-- View Project --}}
-                                <a href="{{ route('projects.show', $project->id) }}" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                
-                                {{-- Edit Project --}}
-                                <a href="{{ route('projects.edit', $project->id) }}" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                                
-                                {{-- Delete Project --}}
-                                <form action="{{ route('projects.destroy', $project->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete the project: {{ $project->name }}?')" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+                                {{-- Edit Project (Admin only) --}}
+                                @if(Auth::user()->isAdmin())
+                                    <a href="{{ route('projects.edit', $project->id) }}" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Project">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    
+                                    {{-- Delete Project (Admin only) --}}
+                                    <form action="{{ route('projects.destroy', $project->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger" 
+                                                onclick="return confirm('Are you sure you want to delete the project: {{ $project->name }}?')" 
+                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Project">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
             @empty
                 <div class="col-12">
-                    <div class="alert alert-info text-center" role="alert">
-                        No Employee found. Start by adding a new Employee!
+                    <div class="text-center py-5">
+                        <i class="bi bi-folder-x display-1 text-muted"></i>
+                        <h4 class="mt-3 text-muted">
+                            @if(Auth::user()->isAdmin())
+                                No projects found
+                            @else
+                                No projects assigned to you
+                            @endif
+                        </h4>
+                        <p class="text-muted">
+                            @if(Auth::user()->isAdmin())
+                                Get started by creating your first project
+                            @else
+                                You haven't been assigned to any projects yet
+                            @endif
+                        </p>
+                        @if(Auth::user()->isAdmin())
+                            <a href="{{ route('projects.create') }}" class="btn btn-accent mt-2">
+                                <i class="bi bi-plus-circle me-1"></i> Create Your First Project
+                            </a>
+                        @endif
                     </div>
                 </div>
             @endforelse
         </div>
+
+        {{-- Pagination --}}
+        @if($projects->hasPages())
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex">
+                        {{ $projects->links() }}
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
     
     {{-- Initialize Tooltips --}}
