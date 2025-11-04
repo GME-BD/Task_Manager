@@ -18,17 +18,17 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
 
     <style>
-        /* General Layout */
+        /* Modern Color Scheme */
         :root {
-            --sidebar-width: 260px;
-            --sidebar-bg: #1f2937;
-            /* Darker, modern slate color */
-            --sidebar-hover: #374151;
+            --sidebar-width: 280px;
+            --sidebar-bg: linear-gradient(180deg, #1a237e 0%, #283593 50%, #303f9f 100%);
+            --sidebar-hover: rgba(255, 255, 255, 0.1);
             --primary-color: #4CAF50;
-            /* Fresh Green */
-            --light-bg: #f7f9fb;
-            /* Clean background */
-            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --primary-gradient: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            --light-bg: #f8fafc;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --sidebar-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            --accent-color: #5c6bc0;
         }
 
         body {
@@ -37,70 +37,97 @@
             margin: 0;
             overflow: hidden;
             background-color: var(--light-bg);
-            /* Prioritize a clean, modern font like Poppins or Noto Sans */
             font-family: 'Poppins', "Noto Sans", sans-serif !important;
             color: #333;
         }
 
         /* Buttons */
         .btn {
-            padding: .35rem .75rem !important;
-            /* Slightly larger, more clickable */
+            padding: .5rem 1rem !important;
             font-size: .9rem !important;
             font-weight: 500;
             border-radius: 8px;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         }
 
-        /* Sidebar Styling */
+        /* Sidebar Styling - Modernized */
         .sidebar {
             width: var(--sidebar-width);
-            background-color: var(--sidebar-bg);
+            background: var(--sidebar-bg);
             color: white;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem 1rem !important;
-            /* Increased padding */
+            box-shadow: var(--sidebar-shadow);
+            padding: 1.5rem 1.2rem !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
         }
 
         .sidebar .nav-link {
-            color: #d1d5db;
-            /* Light gray text for contrast */
+            color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
             display: flex;
             align-items: center;
-            padding: 12px 10px;
-            /* More vertical space */
-            margin-bottom: 5px;
-            border-bottom: none;
-            border-radius: 8px;
-            transition: all 0.2s ease;
+            padding: 14px 16px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
             font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--primary-color);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
         }
 
         .sidebar .nav-link:hover {
             background-color: var(--sidebar-hover);
             color: #ffffff;
-            /* White text on hover */
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link:hover::before {
+            transform: scaleY(1);
         }
 
         .sidebar .nav-link.active {
-            background-color: var(--primary-color) !important;
-            color: #ffffff !important;
-            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         }
 
-        .sidebar .nav-link.active:hover {
-            background-color: var(--primary-color) !important;
-            /* Keep active color consistent */
+        .sidebar .nav-link.active::before {
+            transform: scaleY(1);
         }
 
         .sidebar .nav-link .bi {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             margin-right: 15px;
-            /* More space between icon and text */
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover .bi {
+            transform: scale(1.1);
         }
 
         /* Content Area */
@@ -109,35 +136,41 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            background: var(--light-bg);
         }
 
-        /* Top Navigation Bar */
+        /* Top Navigation Bar - Modernized */
         .topnav {
             flex-shrink: 0;
             width: 100%;
-            background-color: #ffffff;
-            box-shadow: var(--shadow-light);
-            /* Modern, soft shadow */
+            background: linear-gradient(90deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             padding-top: 0.75rem;
             padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .navbar-brand {
             font-weight: 600;
-            color: var(--primary-color) !important;
+            color: var(--accent-color) !important;
             display: flex;
             align-items: center;
+            font-size: 1.1rem;
         }
 
         #currentDateTime {
-            font-size: 0.95rem;
-            color: #555;
+            font-size: 1rem;
+            color: #5c6bc0;
             font-weight: 500;
+            background: rgba(92, 107, 192, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
         }
 
         .navbar-nav .nav-link {
-            color: #333;
+            color: #555;
             font-weight: 500;
+            transition: color 0.3s ease;
         }
 
         .navbar-nav .nav-link:hover {
@@ -145,27 +178,42 @@
         }
 
         .dropdown-menu {
-            border-radius: 8px;
-            box-shadow: var(--shadow-light);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
             border: none;
+            padding: 8px;
         }
 
-        /* Card Styling */
+        .dropdown-item {
+            border-radius: 6px;
+            padding: 8px 12px;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        /* Card Styling - Modernized */
         .card {
-            border: 1px solid #e0e0e0;
-            /* Subtle border for definition */
-            border-radius: 10px;
-            /* Rounded corners */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-            /* Lighter shadow */
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow) !important;
             transition: all 0.3s ease;
+            overflow: hidden;
         }
 
-        /* Footer */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        /* Footer - Modernized */
         footer {
-            background-color: #ffffff;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.02);
+            background: linear-gradient(90deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
             flex-shrink: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         footer .text-muted {
@@ -175,32 +223,85 @@
 
         main {
             flex-grow: 1;
+            padding: 2rem !important;
+        }
+
+        /* Logo Styling */
+        .logo-container {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .logo-container:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .logo-img {
+            width: 100%;
+            max-width: 200px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+
+        /* User dropdown avatar */
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        /* Animation for page load */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sidebar, .topnav, main, footer {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 240px;
+            }
+            
+            .sidebar {
+                padding: 1rem 0.8rem !important;
+            }
+            
+            main {
+                padding: 1.5rem !important;
+            }
         }
     </style>
 </head>
 
 <body>
-    {{-- Sidebar: Modernized background and links --}}
+    {{-- Sidebar: Modernized with gradient background --}}
     <div class="sidebar d-flex flex-column">
-        <h4 class="mb-5 text-center">
+        <div class="logo-container text-center">
             <a href="{{ route('dashboard') }}" class="d-flex align-items-center justify-content-center">
-                {{-- Invert filter is removed, assuming the logo-circle-horizontal.png is now designed for dark
-                background --}}
-                <img src="{{ asset('assets/img/logo-circle-horizontal.png') }}" class="img-fluid"
-                    style="width: 80%; max-width: 180px; height: auto;" alt="task manager">
+                <img src="{{ asset('assets/img/logo-circle-horizontal.png') }}" class="logo-img" alt="task manager">
             </a>
-        </h4>
+        </div>
         <ul class="nav flex-column flex-grow-1">
             <li class="nav-item">
                 <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                    <i class="bi bi-house-door"></i> Home
+                    <i class="bi bi-house-door"></i> Dashboard
                 </a>
             </li>
-            {{-- <li class="nav-item">
-                <a class="nav-link {{ request()->is('mail*') ? 'active' : '' }}" href="{{ route('mail.inbox') }}">
-                    <i class="bi bi-inbox"></i> Inbox
-                </a>
-            </li> --}}
             <li class="nav-item">
                 <a class="nav-link {{ request()->is('projects*') ? 'active' : '' }}"
                     href="{{ route('projects.index') }}">
@@ -229,11 +330,6 @@
                     <i class="bi bi-bell"></i> Reminders
                 </a>
             </li>
-            {{-- <li class="nav-item">
-                <a class="nav-link {{ request()->is('files*') ? 'active' : '' }}" href="{{ route('files.index') }}">
-                    <i class="bi bi-file-earmark-text"></i> Files
-                </a>
-            </li> --}}
         </ul>
 
         {{-- Added a space to push the list up slightly --}}
@@ -241,7 +337,7 @@
     </div>
 
     <div class="content d-flex flex-column">
-        {{-- Topnav: Clean white background, soft shadow --}}
+        {{-- Topnav: Clean with subtle gradient --}}
         <header class="topnav">
             <nav class="navbar navbar-expand-lg navbar-light">
                 <div class="container-fluid px-4">
@@ -261,15 +357,18 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
                                     role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-person-circle me-2" style="font-size: 1.2rem;"></i>
+                                    <div class="user-avatar">
+                                        {{ substr(Auth::user()->name, 0, 1) }}
+                                    </div>
                                     {{ Auth::user()->name }}
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    {{-- <li><a class="dropdown-item" href="#">Settings</a></li> --}}
                                     <li>
                                         <form method="POST" action="{{ route('logout') }}" id="logout-form">
                                             @csrf
-                                            <button type="submit" class="dropdown-item">Logout</button>
+                                            <button type="submit" class="dropdown-item d-flex align-items-center">
+                                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                                            </button>
                                         </form>
                                     </li>
                                 </ul>
@@ -285,11 +384,11 @@
             @yield('content')
         </main>
 
-        {{-- Footer: Subtle and clean --}}
+        {{-- Footer: Modern and clean --}}
         <footer class="mt-auto py-3 text-center">
             <div class="container-fluid">
                 <span class="text-muted">&copy; {{ date('Y') }} Task Manager | Developed by <a href="#"
-                        style="color: var(--primary-color); text-decoration: none;">Admin & IT Department</a></span>
+                        style="color: var(--primary-color); text-decoration: none; font-weight: 500;">Admin & IT Department</a></span>
             </div>
         </footer>
     </div>

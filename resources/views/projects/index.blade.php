@@ -114,8 +114,8 @@
         margin: 0.1rem;
     }
     
-    .creator-info { font-size: 0.8rem; color: #6c757d; margin-bottom: 0.5rem; }
-    .assignment-info { font-size: 0.8rem; color: #28a745; margin-bottom: 0.5rem; font-weight: 500; }
+    .creator-info { font-size: 0.10rem; color: #6c757d; margin-bottom: 0.5rem; }
+    .assignment-info { font-size: 0.10rem; color: #28a745; margin-bottom: 0.5rem; font-weight: 500; }
     .pagination { margin-top: 2rem; }
     .page-link { border-radius: 0.5rem; margin: 0 0.25rem; border: 1px solid #dee2e6; }
     .page-item.active .page-link { background-color: var(--primary-color); border-color: var(--primary-color); }
