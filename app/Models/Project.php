@@ -20,32 +20,50 @@ class Project extends Model
         'budget',
     ];
 
-    protected $dates = [
-        'start_date',
-        'end_date',
-    ];
-
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
     ];
 
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
+    // Project creator (admin)
+    // Project creator (admin) - ONE TO ONE
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
-    // public function tasks()
-    // {
-    //     return $this->hasMany(Task::class);
-    // }
+    // Team members assigned to this project - MANY TO MANY  
+    public function teamMembers()
+    {
+        return $this->belongsToMany(User::class, 'project_teams', 'project_id', 'user_id')
+            ->withTimestamps();
+    }
 
-    // public function files()
-    // {
-    //     return $this->hasMany(File::class);
-    // }
+    // Tasks in this project - ONE TO MANY
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 
-    public function getStatusAttribute()
+    public function files()
+    {
+        return $this->hasMany(File::class);
+    }
+
+    // Helper method to check if user is assigned
+    public function isAssignedTo($userId)
+    {
+        return $this->teamMembers()->where('user_id', $userId)->exists();
+    }
+
+    // Get assigned users count
+    public function getAssignedUsersCountAttribute()
+    {
+        return $this->teamMembers()->count();
+    }
+
+    // Dynamic status calculation
+    public function getCalculatedStatusAttribute()
     {
         $today = Carbon::now();
 
@@ -59,42 +77,5 @@ class Project extends Model
         }
 
         return 'on_going';
-    }
-
-    public function teamProjects()
-    {
-        return $this->belongsToMany(ProjectTeam::class, 'project_teams', 'project_id', 'user_id');
-    }
-
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'project_teams', 'project_id', 'user_id');
-    }
-
-
-
-
-    
-    // ------------------------// Project creator (admin)-------------------------
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    //---------------------------- Team members assigned to this project--------------------------
-    public function teamMembers()
-    {
-        return $this->belongsToMany(User::class, 'project_teams', 'project_id', 'user_id')
-            ->withTimestamps();
-    }
-
-    public function tasks()
-    {
-        return $this->hasMany(Task::class);
-    }
-
-    public function files()
-    {
-        return $this->hasMany(File::class);
     }
 }

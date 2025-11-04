@@ -122,7 +122,7 @@
                     {{-- Project Name --}}
                     <div class="mb-4">
                         <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label>
-                        <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label>
+                        {{-- <label for="name" class="form-label">Project Name <span class="text-danger">*</span></label> --}}
                         <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}"
                             placeholder="Enter project name" required>
                         @error('name')
@@ -176,34 +176,34 @@
                     </div>
 
                     {{-- Budget Field --}}
-                    <div class="mb-4">
+                    {{-- <div class="mb-4">
                         <label for="budget" class="form-label">Budget (Optional)</label>
                         <input type="number" name="budget" id="budget" class="form-control" step="0.01"
                             value="{{ old('budget') }}" placeholder="0.00">
                         @error('budget')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
-                    </div>
+                    </div> --}}
 
+                 
                     {{-- Assign Employees --}}
                     <div class="mb-4">
                         <label class="form-label">Assign to Employees</label>
                         <div class="employees-container">
                             @foreach($employees as $employee)
                                 <div class="form-check">
-                                    <input class="form-check-input employee-checkbox" type="checkbox"
-                                        name="assigned_employees[]" value="{{ $employee->id }}"
-                                        id="employee_{{ $employee->id }}" {{ in_array($employee->id, old('assigned_employees', [])) ? 'checked' : '' }}>
+                                    <input class="form-check-input employee-checkbox" type="checkbox" name="users[]"
+                                        value="{{ $employee->id }}" id="employee_{{ $employee->id }}" {{ in_array($employee->id, old('users', [])) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="employee_{{ $employee->id }}">
                                         {{ $employee->name }} ({{ $employee->email }})
                                     </label>
                                 </div>
                             @endforeach
                         </div>
-                        @error('assigned_employees')
+                        @error('users')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
-                        @error('assigned_employees.*')
+                        @error('users.*')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
                     </div>

@@ -123,6 +123,25 @@
             font-size: 0.75rem;
             margin-left: 0.5rem;
         }
+
+        .stat-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
     </style>
 @endsection
 
@@ -146,6 +165,14 @@
             <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
                 <i class="bi bi-check-circle me-2"></i>
                 {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                {{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
@@ -218,29 +245,39 @@
                     </div>
 
                     {{-- Budget --}}
-                    @if($project->budget)
-                    <div class="mb-4">
+                    {{-- <div class="mb-4">
                         <label for="budget" class="form-label">Budget</label>
                         <input type="number" name="budget" id="budget" class="form-control" step="0.01"
                             value="{{ old('budget', $project->budget) }}" placeholder="0.00">
                         @error('budget')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
-                    </div>
-                    @endif
+                    </div> --}}
 
                     {{-- Assign Employees Section --}}
                     <div class="mb-4">
                         <div class="section-title">
                             <i class="bi bi-people me-2"></i>Assign Team Members
                         </div>
+                        
+                        {{-- Select All Checkbox --}}
+                        @if($employees->isNotEmpty())
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="selectAllEmployees">
+                            <label class="form-check-label fw-bold" for="selectAllEmployees">
+                                Select All Employees
+                            </label>
+                        </div>
+                        @endif
+
                         <div class="employees-container">
                             @forelse($employees as $employee)
                                 <div class="form-check">
+                                    {{-- FIXED: Changed from assigned_employees[] to users[] --}}
                                     <input class="form-check-input employee-checkbox" type="checkbox" 
-                                           name="assigned_employees[]" value="{{ $employee->id }}"
+                                           name="users[]" value="{{ $employee->id }}"
                                            id="employee_{{ $employee->id }}"
-                                           {{ in_array($employee->id, old('assigned_employees', $assignedEmployees)) ? 'checked' : '' }}>
+                                           {{ in_array($employee->id, old('users', $assignedEmployees)) ? 'checked' : '' }}>
                                     <label class="form-check-label d-flex justify-content-between align-items-center" for="employee_{{ $employee->id }}">
                                         <span>
                                             {{ $employee->name }} 
@@ -258,10 +295,10 @@
                                 </div>
                             @endforelse
                         </div>
-                        @error('assigned_employees')
+                        @error('users')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
-                        @error('assigned_employees.*')
+                        @error('users.*')
                             <span class="text-danger mt-1 d-block">{{ $message }}</span>
                         @enderror
                         
@@ -276,27 +313,27 @@
                     </div>
 
                     {{-- Project Statistics --}}
-                    <div class="mb-4 p-3 bg-light rounded">
+                    <div class="mb-4">
                         <div class="section-title">
                             <i class="bi bi-graph-up me-2"></i>Project Statistics
                         </div>
-                        <div class="row text-center">
-                            <div class="col-4">
-                                <div class="border-end">
-                                    <div class="h5 mb-1 text-primary">{{ $project->tasks->count() }}</div>
-                                    <small class="text-muted">Total Tasks</small>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number text-primary">{{ $project->tasks->count() }}</div>
+                                    <div class="stat-label">Total Tasks</div>
                                 </div>
                             </div>
-                            <div class="col-4">
-                                <div class="border-end">
-                                    <div class="h5 mb-1 text-success">{{ $project->tasks->where('status', 'completed')->count() }}</div>
-                                    <small class="text-muted">Completed</small>
+                            <div class="col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number text-success">{{ $project->tasks->where('status', 'completed')->count() }}</div>
+                                    <div class="stat-label">Completed</div>
                                 </div>
                             </div>
-                            <div class="col-4">
-                                <div>
-                                    <div class="h5 mb-1 text-info">{{ $project->teamMembers->count() }}</div>
-                                    <small class="text-muted">Team Members</small>
+                            <div class="col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number text-info">{{ $project->teamMembers->count() }}</div>
+                                    <div class="stat-label">Team Members</div>
                                 </div>
                             </div>
                         </div>
@@ -338,8 +375,10 @@
                     
                     if (endDate < startDate) {
                         endDateInput.setCustomValidity('End date cannot be before start date');
+                        endDateInput.classList.add('is-invalid');
                     } else {
                         endDateInput.setCustomValidity('');
+                        endDateInput.classList.remove('is-invalid');
                     }
                 }
             }
@@ -348,25 +387,15 @@
             endDateInput.addEventListener('change', validateDates);
 
             // Select all employees functionality
-            const selectAllCheckbox = document.createElement('div');
-            selectAllCheckbox.className = 'form-check mb-2';
-            selectAllCheckbox.innerHTML = `
-                <input class="form-check-input" type="checkbox" id="selectAllEmployees">
-                <label class="form-check-label fw-bold" for="selectAllEmployees">
-                    Select All Employees
-                </label>
-            `;
-            
-            const employeesContainer = document.querySelector('.employees-container');
-            if (employeesContainer) {
-                employeesContainer.parentNode.insertBefore(selectAllCheckbox, employeesContainer);
-                
-                const selectAll = document.getElementById('selectAllEmployees');
+            const selectAll = document.getElementById('selectAllEmployees');
+            if (selectAll) {
                 const employeeCheckboxes = document.querySelectorAll('.employee-checkbox');
                 
                 selectAll.addEventListener('change', function() {
                     employeeCheckboxes.forEach(checkbox => {
                         checkbox.checked = this.checked;
+                        // Trigger change event to update visual state
+                        checkbox.dispatchEvent(new Event('change'));
                     });
                 });
                 
@@ -379,6 +408,80 @@
                         selectAll.checked = allChecked;
                         selectAll.indeterminate = someChecked && !allChecked;
                     });
+                });
+
+                // Initialize select all state
+                const someChecked = Array.from(employeeCheckboxes).some(cb => cb.checked);
+                const allChecked = Array.from(employeeCheckboxes).every(cb => cb.checked);
+                
+                if (allChecked) {
+                    selectAll.checked = true;
+                    selectAll.indeterminate = false;
+                } else if (someChecked) {
+                    selectAll.checked = false;
+                    selectAll.indeterminate = true;
+                }
+            }
+
+            // Real-time form validation
+            const nameInput = document.getElementById('name');
+            const statusSelect = document.getElementById('status');
+
+            nameInput.addEventListener('input', function() {
+                if (this.value.length > 0) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
+            });
+
+            statusSelect.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                }
+            });
+
+            // Initialize validation state
+            if (nameInput.value) {
+                nameInput.classList.add('is-valid');
+            }
+            if (statusSelect.value) {
+                statusSelect.classList.add('is-valid');
+            }
+
+            // Show confirmation before leaving if form has changes
+            let formChanged = false;
+            const form = document.querySelector('form');
+            const initialFormData = new FormData(form);
+
+            form.addEventListener('change', function() {
+                formChanged = true;
+            });
+
+            form.addEventListener('submit', function() {
+                formChanged = false;
+            });
+
+            window.addEventListener('beforeunload', function(e) {
+                if (formChanged) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            // Cancel button confirmation
+            const cancelButton = document.querySelector('a[href*="cancel"], a.btn-outline-secondary');
+            if (cancelButton) {
+                cancelButton.addEventListener('click', function(e) {
+                    if (formChanged) {
+                        if (!confirm('You have unsaved changes. Are you sure you want to leave?')) {
+                            e.preventDefault();
+                        }
+                    }
                 });
             }
         });

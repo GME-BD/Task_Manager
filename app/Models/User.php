@@ -7,83 +7,54 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
 
-    // //Hepler Method for Admin
-    // public function isAdmin(): bool
-    //     {
-    // return $this->role === 'admin';
-    //     }
-
-
-    /**
-     * Get the projects for the user.
-     */
+    // Relationships
     public function projects()
     {
         return $this->hasMany(Project::class);
     }
 
-    /**
-     * Get the tasks for the user.
-     */
+    // FIXED: Projects assigned to this user (as team member)
+    public function assignedProjects()
+    {
+        return $this->belongsToMany(Project::class, 'project_teams', 'user_id', 'project_id')
+            ->withTimestamps();
+    }
+
     public function tasks()
     {
         return $this->hasMany(Task::class);
     }
 
-    /**
-     * Get the routines for the user.
-     */
     public function routines()
     {
         return $this->hasMany(Routine::class);
     }
 
-    /**
-     * Get the notes for the user.
-     */
     public function notes()
     {
         return $this->hasMany(Note::class);
     }
 
-    /**
-     * Get the calendar events for the user.
-     */
     public function files()
     {
         return $this->hasMany(File::class);
@@ -94,37 +65,38 @@ class User extends Authenticatable
         return $this->hasMany(Reminder::class);
     }
 
-    public function projectMembers()
-    {
-        return $this->belongsToMany(Project::class, 'project_teams', 'user_id', 'project_id');
-    }
-
-
-
-
-
-// Projects created by this user (if admin)
-    public function createdProjects()
-    {
-        return $this->hasMany(Project::class, 'user_id');
-    }
-
-    // Projects assigned to this user
-    public function assignedProjects()
-    {
-        return $this->belongsToMany(Project::class, 'project_teams', 'user_id', 'project_id')
-                    ->withTimestamps();
-    }
-
-    // Check if user is admin
+    // Role checks
     public function isAdmin()
     {
         return $this->role === 'admin';
     }
 
-    // Check if user is employee
     public function isEmployee()
     {
-        return $this->role === 'employee';
+        return $this->role === 'user';
+    }
+
+    // Scopes
+    public function scopeEmployees($query)
+    {
+        return $query->where('role', 'user');
+    }
+
+    public function scopeExcludeCurrent($query)
+    {
+        return $query->where('id', '!=', auth()->id());
+    }
+
+    // Helper: Get all projects user has access to (created + assigned)
+    public function accessibleProjects()
+    {
+        if ($this->isAdmin()) {
+            return Project::query();
+        }
+        
+        return Project::where('user_id', $this->id)
+            ->orWhereHas('teamMembers', function ($query) {
+                $query->where('user_id', $this->id);
+            });
     }
 }

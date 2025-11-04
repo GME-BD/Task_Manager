@@ -287,12 +287,12 @@
                         </div>
 
                         {{-- Budget (if exists) --}}
-                        @if($project->budget)
+                        {{-- @if($project->budget)
                         <div class="detail-item">
                             <strong><i class="bi bi-currency-dollar me-2"></i> Budget:</strong>
                             ${{ number_format($project->budget, 2) }}
                         </div>
-                        @endif
+                        @endif --}}
 
                         {{-- Progress Bar --}}
                         <h5 class="mt-5 mb-3 fw-bold">Overall Progress</h5>
