@@ -62,6 +62,13 @@
             padding: 1.5rem 1.2rem !important;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+            opacity: 0;
         }
 
         .sidebar::before {
@@ -137,6 +144,11 @@
             flex-direction: column;
             overflow-y: auto;
             background: var(--light-bg);
+            transition: all 0.3s ease;
+        }
+
+        .content.expanded {
+            margin-left: 0;
         }
 
         /* Top Navigation Bar - Modernized */
@@ -271,6 +283,40 @@
             animation: fadeIn 0.5s ease-out;
         }
 
+        /* Hamburger Menu Button */
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(92, 107, 192, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* Mobile Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             :root {
@@ -279,18 +325,47 @@
             
             .sidebar {
                 padding: 1rem 0.8rem !important;
+                position: fixed;
+                height: 100vh;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            
+            .content {
+                margin-left: 0 !important;
             }
             
             main {
                 padding: 1.5rem !important;
+            }
+            
+            .sidebar-toggle {
+                display: block !important;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar-toggle {
+                display: none !important;
+            }
+            
+            .sidebar-overlay {
+                display: none !important;
             }
         }
     </style>
 </head>
 
 <body>
+    {{-- Mobile Overlay --}}
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     {{-- Sidebar: Modernized with gradient background --}}
-    <div class="sidebar d-flex flex-column">
+    <div class="sidebar d-flex flex-column" id="sidebar">
         <div class="logo-container text-center">
             <a href="{{ route('dashboard') }}" class="d-flex align-items-center justify-content-center">
                 <img src="{{ asset('assets/img/logo-circle-horizontal.png') }}" class="logo-img" alt="task manager">
@@ -336,11 +411,16 @@
         <div style="height: 20px;"></div>
     </div>
 
-    <div class="content d-flex flex-column">
+    <div class="content d-flex flex-column" id="mainContent">
         {{-- Topnav: Clean with subtle gradient --}}
         <header class="topnav">
             <nav class="navbar navbar-expand-lg navbar-light">
                 <div class="container-fluid px-4">
+                    {{-- Hamburger Menu Button --}}
+                    <button class="sidebar-toggle d-lg-none" id="sidebarToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+
                     {{-- Updated Brand/Date Display --}}
                     <a class="navbar-brand me-auto" href="{{ route('dashboard') }}">
                         <span id="currentDateTime"></span>
@@ -412,6 +492,43 @@
 
         updateDateTime();
         setInterval(updateDateTime, 1000);
+
+        // Sidebar Toggle Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.getElementById('mainContent');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('mobile-open');
+                sidebarOverlay.classList.toggle('active');
+            }
+
+            // Toggle sidebar when hamburger button is clicked
+            sidebarToggle.addEventListener('click', toggleSidebar);
+
+            // Close sidebar when overlay is clicked
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+
+            // Close sidebar when a nav link is clicked (on mobile)
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        toggleSidebar();
+                    }
+                });
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('mobile-open');
+                    sidebarOverlay.classList.remove('active');
+                }
+            });
+        });
     </script>
 </body>
 

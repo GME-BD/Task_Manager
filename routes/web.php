@@ -118,14 +118,19 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('reminders', ReminderController::class);
 
     // Checklist Item Routes
-    Route::prefix('checklist-items')->name('checklist-items.')->group(function () {
-        Route::get('/', [ChecklistItemController::class, 'index'])->name('index');
-        Route::post('/', [ChecklistItemController::class, 'store'])->name('store');
-        Route::get('/{checklistItem}/edit', [ChecklistItemController::class, 'edit'])->name('edit');
-        Route::put('/{checklistItem}', [ChecklistItemController::class, 'update'])->name('update');
-        Route::delete('/{checklistItem}', [ChecklistItemController::class, 'destroy'])->name('destroy');
-        Route::get('/{checklistItem}/update-status', [ChecklistItemController::class, 'updateStatus'])->name('update-status');
-    });
+    // Route::prefix('checklist-items')->name('checklist-items.')->group(function () {
+    //     Route::get('/', [ChecklistItemController::class, 'index'])->name('index');
+    //     Route::post('/', [ChecklistItemController::class, 'store'])->name('store');
+    //     Route::get('/{checklistItem}/edit', [ChecklistItemController::class, 'edit'])->name('edit');
+    //     Route::put('/{checklistItem}', [ChecklistItemController::class, 'update'])->name('update');
+    //     Route::delete('/{checklistItem}', [ChecklistItemController::class, 'destroy'])->name('destroy');
+    //     Route::get('/{checklistItem}/update-status', [ChecklistItemController::class, 'updateStatus'])->name('update-status');
+    // });
+
+    // Checklist Item Routes - FIXED VERSION
+    Route::post('/tasks/{task}/checklist-items', [ChecklistItemController::class, 'store'])->name('checklist-items.store');
+    Route::post('/checklist-items/{checklistItem}/update-status', [ChecklistItemController::class, 'updateStatus'])->name('checklist-items.update-status');
+    Route::delete('/checklist-items/{checklistItem}', [ChecklistItemController::class, 'destroy'])->name('checklist-items.destroy');
 
     // Mail Routes
     Route::prefix('mail')->name('mail.')->group(function () {

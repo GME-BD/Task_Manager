@@ -120,23 +120,25 @@
                                             <label class="form-check-label flex-grow-1 {{ $item->completed ? 'text-decoration-line-through text-muted' : 'text-dark' }}">
                                                 {{ $item->name }}
                                             </label>
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                    <i class="bi bi-three-dots"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end">
-                                                    <li>
-                                                        <form method="POST" action="{{ route('checklist-items.destroy', $item->id) }}" 
-                                                              class="d-inline delete-checklist-form" data-item-id="{{ $item->id }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="dropdown-item text-danger">
-                                                                <i class="bi bi-trash me-2"></i>Delete
-                                                            </button>
-                                                        </form>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            @if(auth()->user()->isAdmin())
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                        <i class="bi bi-three-dots"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li>
+                                                            <form method="POST" action="{{ route('checklist-items.destroy', $item->id ) }}" 
+                                                                  class="d-inline delete-checklist-form" data-item-id="{{ $item->id }}">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="dropdown-item text-danger">
+                                                                    <i class="bi bi-trash me-2"></i>Delete
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
@@ -363,7 +365,7 @@
 
         document.getElementById('start-btn').addEventListener('click', () => {
             if (!isRunning) {
-                isRunning = true;
+                isRunning = true; 
                 timer = setInterval(() => {
                     seconds++;
                     updateTimeDisplay();
@@ -420,7 +422,7 @@
             .catch(error => console.error('Error:', error));
         }
 
-        // Delete checklist item with confirmation
+        // Delete checklist item with confirmation (only for admin)
         document.querySelectorAll('.delete-checklist-form').forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -439,6 +441,17 @@
                     .then(data => {
                         if (data.success) {
                             document.getElementById(`checklist-item-${itemId}`).remove();
+                            
+                            // If no items left, show empty state
+                            const checklistItems = document.getElementById('checklist-items');
+                            if (checklistItems.children.length === 0) {
+                                checklistItems.innerHTML = `
+                                    <div class="text-center py-5">
+                                        <i class="bi bi-list-check display-4 text-muted mb-3"></i>
+                                        <p class="text-muted">No tasklist items yet. Add your first one!</p>
+                                    </div>
+                                `;
+                            }
                         }
                     })
                     .catch(error => console.error('Error:', error));
@@ -470,6 +483,27 @@
                         checklistItems.innerHTML = '';
                     }
                     
+                    const isAdmin = {{ auth()->user()->isAdmin() ? 'true' : 'false' }};
+                    const deleteButton = isAdmin ? `
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <form method="POST" action="{{ route('checklist-items.destroy', '') }}/${data.id}" 
+                                          class="d-inline delete-checklist-form" data-item-id="${data.id}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi bi-trash me-2"></i>Delete
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    ` : '';
+                    
                     const checklistItem = document.createElement('div');
                     checklistItem.className = 'list-group-item px-0 py-3 border-0';
                     checklistItem.id = `checklist-item-${data.id}`;
@@ -484,62 +518,48 @@
                             <label class="form-check-label flex-grow-1 text-dark">
                                 ${data.name}
                             </label>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <form method="POST" action="{{ route('checklist-items.destroy', '') }}/${data.id}" 
-                                              class="d-inline delete-checklist-form" data-item-id="${data.id}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="bi bi-trash me-2"></i>Delete
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
+                            ${deleteButton}
                         </div>
                     `;
 
                     checklistItems.appendChild(checklistItem);
                     
-                    // Add event listener for the new delete button
-                    const deleteForm = checklistItem.querySelector('.delete-checklist-form');
-                    deleteForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const itemId = this.getAttribute('data-item-id');
-                        
-                        if (confirm('Are you sure you want to delete this task?')) {
-                            fetch(this.action, {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                },
-                                body: '_method=DELETE'
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    document.getElementById(`checklist-item-${itemId}`).remove();
-                                    
-                                    // If no items left, show empty state
-                                    if (checklistItems.children.length === 0) {
-                                        checklistItems.innerHTML = `
-                                            <div class="text-center py-5">
-                                                <i class="bi bi-list-check display-4 text-muted mb-3"></i>
-                                                <p class="text-muted">No tasklist items yet. Add your first one!</p>
-                                            </div>
-                                        `;
+                    // Add event listener for the new delete button (only if admin)
+                    if (isAdmin) {
+                        const deleteForm = checklistItem.querySelector('.delete-checklist-form');
+                        deleteForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            const itemId = this.getAttribute('data-item-id');
+                            
+                            if (confirm('Are you sure you want to delete this task?')) {
+                                fetch(this.action, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Content-Type': 'application/x-www-form-urlencoded',
+                                    },
+                                    body: '_method=DELETE'
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        document.getElementById(`checklist-item-${itemId}`).remove();
+                                        
+                                        // If no items left, show empty state
+                                        if (checklistItems.children.length === 0) {
+                                            checklistItems.innerHTML = `
+                                                <div class="text-center py-5">
+                                                    <i class="bi bi-list-check display-4 text-muted mb-3"></i>
+                                                    <p class="text-muted">No tasklist items yet. Add your first one!</p>
+                                                </div>
+                                            `;
+                                        }
                                     }
-                                }
-                            })
-                            .catch(error => console.error('Error:', error));
-                        }
-                    });
+                                })
+                                .catch(error => console.error('Error:', error));
+                            }
+                        });
+                    }
                     
                     form.reset();
                     document.querySelector('#addChecklistModal .btn-close').click();
