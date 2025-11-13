@@ -78,13 +78,14 @@ Route::middleware(['auth'])->group(function () {
 
         // Project Tasks - Kanban Board
         Route::get('/{project}/tasks', [TaskController::class, 'index'])->name('tasks.index');
-        Route::post('/{project}/tasks', [TaskController::class, 'store'])->name('tasks.store'); // ADD THIS BACK
+        Route::post('/{project}/tasks', [TaskController::class, 'store'])->name('tasks.store');
     });
 
-    // Task Routes - UPDATED with create route and proper store
+    // Task Routes - UPDATED with proper routes
     Route::prefix('tasks')->name('tasks.')->group(function () {
-        Route::get('/create', [TaskController::class, 'create'])->name('create'); // NEW
-        Route::post('/', [TaskController::class, 'store'])->name('store'); // UPDATED - now handles project_id
+        Route::get('/', [TaskController::class, 'allTasks'])->name('index'); // General tasks overview
+        Route::get('/create', [TaskController::class, 'create'])->name('create');
+        Route::post('/', [TaskController::class, 'store'])->name('store');
         Route::get('/{task}', [TaskController::class, 'show'])->name('show');
         Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
         Route::put('/{task}', [TaskController::class, 'update'])->name('update');
@@ -116,18 +117,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Reminder Routes
     Route::resource('reminders', ReminderController::class);
+    Route::post('/reminders/{reminder}/mark-completed', [ReminderController::class, 'markCompleted'])
+        ->name('reminders.mark-completed');
+    Route::post('/reminders/{reminder}/mark-incomplete', [ReminderController::class, 'markIncomplete'])
+        ->name('reminders.mark-incomplete');
 
     // Checklist Item Routes
-    // Route::prefix('checklist-items')->name('checklist-items.')->group(function () {
-    //     Route::get('/', [ChecklistItemController::class, 'index'])->name('index');
-    //     Route::post('/', [ChecklistItemController::class, 'store'])->name('store');
-    //     Route::get('/{checklistItem}/edit', [ChecklistItemController::class, 'edit'])->name('edit');
-    //     Route::put('/{checklistItem}', [ChecklistItemController::class, 'update'])->name('update');
-    //     Route::delete('/{checklistItem}', [ChecklistItemController::class, 'destroy'])->name('destroy');
-    //     Route::get('/{checklistItem}/update-status', [ChecklistItemController::class, 'updateStatus'])->name('update-status');
-    // });
-
-    // Checklist Item Routes - FIXED VERSION
     Route::post('/tasks/{task}/checklist-items', [ChecklistItemController::class, 'store'])->name('checklist-items.store');
     Route::post('/checklist-items/{checklistItem}/update-status', [ChecklistItemController::class, 'updateStatus'])->name('checklist-items.update-status');
     Route::delete('/checklist-items/{checklistItem}', [ChecklistItemController::class, 'destroy'])->name('checklist-items.destroy');

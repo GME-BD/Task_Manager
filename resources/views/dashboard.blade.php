@@ -366,19 +366,19 @@
             {{-- <div class="quick-stats glass-card">
                 <div class="row text-center">
                     <div class="col">
-                        <div class="h4 text-black mb-1">{{ $tasksCount }}</div>
+                        <div class="h4 text-black mb-1">{{ $tasksCount ?? 0 }}</div>
                         <small class="text-black opacity-75">Active Tasks</small>
                     </div>
                     <div class="col">
-                        <div class="h4 text-black mb-1">{{ $projectsCount }}</div>
+                        <div class="h4 text-black mb-1">{{ $projectsCount ?? 0 }}</div>
                         <small class="text-black opacity-75">Projects</small>
                     </div>
                     <div class="col">
-                        <div class="h4 text-black mb-1">{{ $todayRoutines->count() }}</div>
+                        <div class="h4 text-black mb-1">{{ $todayRoutines->count() ?? 0 }}</div>
                         <small class="text-black opacity-75">Today's Routines</small>
                     </div>
                     <div class="col">
-                        <div class="h4 text-black mb-1">{{ $upcomingReminders->count() }}</div>
+                        <div class="h4 text-black mb-1">{{ $upcomingReminders->count() ?? 0 }}</div>
                         <small class="text-black opacity-75">Reminders</small>
                     </div>
                 </div>
@@ -392,7 +392,7 @@
                             <div class="stat-icon mx-auto">
                                 <i class="bi bi-check2-circle"></i>
                             </div>
-                            <div class="stat-number">{{ $tasksCount }}</div>
+                            <div class="stat-number">{{ $tasksCount ?? 0 }}</div>
                             <div class="stat-label">Tasks</div>
                         </div>
                     </div>
@@ -403,7 +403,7 @@
                             <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
                                 <i class="bi bi-folder2-open"></i>
                             </div>
-                            <div class="stat-number">{{ $projectsCount }}</div>
+                            <div class="stat-number">{{ $projectsCount ?? 0 }}</div>
                             <div class="stat-label">Projects</div>
                         </div>
                     </div>
@@ -414,7 +414,7 @@
                             <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
                                 <i class="bi bi-arrow-repeat"></i>
                             </div>
-                            <div class="stat-number">{{ $routinesCount }}</div>
+                            <div class="stat-number">{{ $routinesCount ?? 0 }}</div>
                             <div class="stat-label">Routines</div>
                         </div>
                     </div>
@@ -425,7 +425,7 @@
                             <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
                                 <i class="bi bi-journal-text"></i>
                             </div>
-                            <div class="stat-number">{{ $notesCount }}</div>
+                            <div class="stat-number">{{ $notesCount ?? 0 }}</div>
                             <div class="stat-label">Notes</div>
                         </div>
                     </div>
@@ -436,7 +436,7 @@
                             <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);">
                                 <i class="bi bi-files"></i>
                             </div>
-                            <div class="stat-number">{{ $filesCount }}</div>
+                            <div class="stat-number">{{ $filesCount ?? 0 }}</div>
                             <div class="stat-label">Files</div>
                         </div>
                     </div>
@@ -448,7 +448,7 @@
                                 style="background: linear-gradient(135deg, #a8edea, #fed6e3); color: #333;">
                                 <i class="bi bi-bell"></i>
                             </div>
-                            <div class="stat-number">{{ $remindersCount }}</div>
+                            <div class="stat-number">{{ $remindersCount ?? 0 }}</div>
                             <div class="stat-label">Reminders</div>
                         </div>
                     </div>
@@ -466,16 +466,21 @@
                             </h5>
                         </div>
                         <div class="card-body p-4">
-                            @forelse($recentTasks as $task)
-                                <div
-                                    class="list-item {{ $task->status == 'completed' ? 'upcoming' : ($task->due_date && $task->due_date->isPast() ? 'overdue' : 'today') }}">
+                            @forelse($recentTasks ?? [] as $task)
+                                @php
+                                    // Convert string dates to Carbon instances for comparison
+                                    $dueDate = $task->due_date ? \Carbon\Carbon::parse($task->due_date) : null;
+                                    $isOverdue = $dueDate && $dueDate->isPast() && $task->status !== 'completed';
+                                    $statusClass = $task->status == 'completed' ? 'upcoming' : ($isOverdue ? 'overdue' : 'today');
+                                @endphp
+                                <div class="list-item {{ $statusClass }}">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 fw-bold">{{ Str::limit($task->title, 35) }}</h6>
                                             <small class="text-muted">
                                                 <i class="bi bi-folder me-1"></i>{{ $task->project->name ?? 'No Project' }}
-                                                @if($task->due_date)
-                                                    • <i class="bi bi-calendar me-1"></i>{{ $task->due_date->format('M d') }}
+                                                @if($dueDate)
+                                                    • <i class="bi bi-calendar me-1"></i>{{ $dueDate->format('M d') }}
                                                 @endif
                                             </small>
                                         </div>
@@ -492,9 +497,9 @@
                                 </div>
                             @endforelse
 
-                            @if($recentTasks->count() > 0)
+                            @if(($recentTasks ?? collect())->count() > 0)
                                 <div class="text-center mt-4">
-                                    <a href="{{ route('projects.index') }}" class="btn-modern btn-sm">
+                                    <a href="{{ route('tasks.index') ?? '#' }}" class="btn-modern btn-sm">
                                         View All Tasks
                                     </a>
                                 </div>
@@ -512,14 +517,18 @@
                             </h5>
                         </div>
                         <div class="card-body p-4">
-                            @forelse($todayRoutines as $routine)
+                            @forelse($todayRoutines ?? [] as $routine)
+                                @php
+                                    // Convert time string to Carbon instance for formatting
+                                    $startTime = $routine->start_time ? \Carbon\Carbon::parse($routine->start_time) : null;
+                                @endphp
                                 <div class="list-item today">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 fw-bold">{{ Str::limit($routine->title, 35) }}</h6>
                                             <small class="text-muted">
-                                                @if($routine->start_time)
-                                                    <i class="bi bi-clock me-1"></i>{{ $routine->start_time->format('g:i A') }}
+                                                @if($startTime)
+                                                    <i class="bi bi-clock me-1"></i>{{ $startTime->format('g:i A') }}
                                                 @endif
                                                 @if($routine->description)
                                                     • {{ Str::limit($routine->description, 25) }}
@@ -540,7 +549,7 @@
                                 </div>
                             @endforelse
 
-                            @if($todayRoutines->count() > 0)
+                            @if(($todayRoutines ?? collect())->count() > 0)
                                 <div class="text-center mt-4">
                                     <a href="{{ route('routines.index') }}" class="btn-modern btn-sm">
                                         View All Routines
@@ -560,14 +569,14 @@
                             </h5>
                         </div>
                         <div class="card-body p-4">
-                            @forelse($recentProjects as $project)
+                            @forelse($recentProjects ?? [] as $project)
                                 <div class="list-item upcoming">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 fw-bold">{{ Str::limit($project->name, 35) }}</h6>
                                             <small class="text-muted">
-                                                <i class="bi bi-people me-1"></i>{{ $project->teamMembers->count() }} members
-                                                • <i class="bi bi-list-task me-1"></i>{{ $project->tasks->count() }} tasks
+                                                <i class="bi bi-people me-1"></i>{{ $project->teamMembers->count() ?? 0 }} members
+                                                • <i class="bi bi-list-task me-1"></i>{{ $project->tasks->count() ?? 0 }} tasks
                                             </small>
                                         </div>
                                         <span class="badge-modern"
@@ -584,7 +593,7 @@
                                 </div>
                             @endforelse
 
-                            @if($recentProjects->count() > 0)
+                            @if(($recentProjects ?? collect())->count() > 0)
                                 <div class="text-center mt-4">
                                     <a href="{{ route('projects.index') }}" class="btn-modern btn-sm">
                                         View All Projects
@@ -604,22 +613,37 @@
                             </h5>
                         </div>
                         <div class="card-body p-4">
-                            @forelse($upcomingReminders as $reminder)
-                                <div
-                                    class="list-item {{ $reminder->date->isToday() ? 'today' : ($reminder->date->isPast() ? 'overdue' : 'upcoming') }}">
+                            @forelse($upcomingReminders ?? [] as $reminder)
+                                @php
+                                    // Convert string dates to Carbon instances
+                                    $reminderDate = $reminder->date ? \Carbon\Carbon::parse($reminder->date) : null;
+                                    $reminderTime = $reminder->time ? \Carbon\Carbon::parse($reminder->time) : null;
+                                    
+                                    // Determine status
+                                    $isToday = $reminderDate && $reminderDate->isToday();
+                                    $isPast = $reminderDate && $reminderDate->isPast();
+                                    $statusClass = $isToday ? 'today' : ($isPast ? 'overdue' : 'upcoming');
+                                    
+                                    // Determine badge text and color
+                                    $badgeText = $isToday ? 'Today' : ($isPast ? 'Overdue' : ($reminderDate ? $reminderDate->diffForHumans() : 'Scheduled'));
+                                    $badgeColor = $isToday ? '#f59e0b' : ($isPast ? '#ef4444' : '#10b981');
+                                @endphp
+                                <div class="list-item {{ $statusClass }}">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 fw-bold">{{ Str::limit($reminder->title, 35) }}</h6>
                                             <small class="text-muted">
-                                                <i class="bi bi-calendar me-1"></i>{{ $reminder->date->format('M d, Y') }}
-                                                @if($reminder->time)
-                                                    • <i class="bi bi-clock me-1"></i>{{ $reminder->time->format('g:i A') }}
+                                                @if($reminderDate)
+                                                    <i class="bi bi-calendar me-1"></i>{{ $reminderDate->format('M d, Y') }}
+                                                @endif
+                                                @if($reminderTime)
+                                                    • <i class="bi bi-clock me-1"></i>{{ $reminderTime->format('g:i A') }}
                                                 @endif
                                             </small>
                                         </div>
                                         <span class="badge-modern"
-                                            style="background: linear-gradient(135deg, {{ $reminder->date->isToday() ? '#f59e0b' : ($reminder->date->isPast() ? '#ef4444' : '#10b981') }}, {{ $reminder->date->isToday() ? '#f59e0b' : ($reminder->date->isPast() ? '#ef4444' : '#10b981') }});">
-                                            {{ $reminder->date->isToday() ? 'Today' : ($reminder->date->isPast() ? 'Overdue' : $reminder->date->diffForHumans()) }}
+                                            style="background: linear-gradient(135deg, {{ $badgeColor }}, {{ $badgeColor }});">
+                                            {{ $badgeText }}
                                         </span>
                                     </div>
                                 </div>
@@ -631,7 +655,7 @@
                                 </div>
                             @endforelse
 
-                            @if($upcomingReminders->count() > 0)
+                            @if(($upcomingReminders ?? collect())->count() > 0)
                                 <div class="text-center mt-4">
                                     <a href="{{ route('reminders.index') }}" class="btn-modern btn-sm">
                                         View All Reminders
@@ -651,7 +675,7 @@
             // Animate stats counting
             const statNumbers = document.querySelectorAll('.stat-number');
             statNumbers.forEach(stat => {
-                const target = parseInt(stat.textContent);
+                const target = parseInt(stat.textContent) || 0;
                 let current = 0;
                 const increment = target / 50;
                 const timer = setInterval(() => {
