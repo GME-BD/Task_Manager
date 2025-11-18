@@ -498,11 +498,11 @@
                             @endforelse
 
                             @if(($recentTasks ?? collect())->count() > 0)
-                                <div class="text-center mt-4">
+                                {{-- <div class="text-center mt-4">
                                     <a href="{{ route('tasks.index') ?? '#' }}" class="btn-modern btn-sm">
                                         View All Tasks
                                     </a>
-                                </div>
+                                </div> --}}
                             @endif
                         </div>
                     </div>
